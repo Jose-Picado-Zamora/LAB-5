@@ -3,6 +3,7 @@ import "./App.css";
 
 interface Todo {
   description: string;
+  completed: boolean;
 }
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
 
   const handleClick = () => {
     const tempTodoList = [...todoList];
-    const newTodo = { description: todoDescription };
+    const newTodo = { description: todoDescription, completed: false };
 
     tempTodoList.unshift(newTodo);
 
@@ -23,20 +24,38 @@ function App() {
   };
 
   const handleDelete = (index: number) => {
-    const updatedList = todoList.filter((_, i) => i !== index); 
-    setTodoList(updatedList); 
+    const updatedList = todoList.filter((_, i) => i !== index);
+    setTodoList(updatedList);
   };
 
   const handleUpdate = (index: number) => {
-    const updatedList = [...todoList]; 
-    const todoToUpdate = updatedList[index]; 
-  
-    const newDescription = prompt("Edit the task description:", todoToUpdate.description);
-  
+    const updatedList = [...todoList];
+    const todoToUpdate = updatedList[index];
+
+    const newDescription = prompt(
+      "Edit the task description:",
+      todoToUpdate.description
+    );
+
     if (newDescription) {
-      todoToUpdate.description = newDescription; 
-      setTodoList(updatedList); 
+      todoToUpdate.description = newDescription;
+      setTodoList(updatedList);
     }
+  };
+
+  const handleCheckboxChange = (index: number) => {
+    const updatedList = todoList.map((todo, i) => {
+      if (i === index) {
+        return { ...todo, completed: !todo.completed };
+      }
+      return todo;
+    });
+
+    const reorderedList = updatedList
+      .filter((todo) => !todo.completed)
+      .concat(updatedList.filter((todo) => todo.completed));
+
+    setTodoList(reorderedList);
   };
 
   return (
@@ -56,7 +75,11 @@ function App() {
         {todoList.map((todo, index) => {
           return (
             <li key={index}>
-              <input type="checkbox"></input>
+              <input
+                type="checkbox"
+                checked={todo.completed}
+                onChange={() => handleCheckboxChange(index)}
+              />
               {todo.description}
               <button
                 onClick={() => handleDelete(index)}
@@ -82,6 +105,6 @@ export default App;
 //1. post / save the Todo Item (in a native state) (create Itema, Read Item, Update Item, Delete Item)//*Done
 //2. Last item will be kept on top //*Done
 //3. Add a checkbox to each item  //*Done
-//4. When the users clicks on the checkbox, the item will sink to the bottom of the list  //TODO
+//4. When the users clicks on the checkbox, the item will sink to the bottom of the list  //*Done
 //5. When the users clicks on the checkbox, it will show the date the task was completed  //TODO
 //6. Make sure when you refresh the page, the list is still there (use local storage) //TODO
