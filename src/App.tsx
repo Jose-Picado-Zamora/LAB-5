@@ -1,26 +1,52 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 
 interface Todo {
   description: string;
   completed: boolean;
+  completedDate?: string;
 }
 
 function App() {
   const [todoDescription, setTodoDescription] = useState("");
   const [todoList, setTodoList] = useState<Todo[]>([]);
 
+  useEffect(() => {  
+    const savedTodos = localStorage.getItem("todoList");
+    if (savedTodos) {
+      try {
+        const parsedTodos = JSON.parse(savedTodos);
+        if (Array.isArray(parsedTodos)) {
+          console.log("Loaded from Local Storage:", parsedTodos);
+          setTodoList(parsedTodos);
+        } else {
+          console.warn("Parsed data is not an array:", parsedTodos);
+        }
+      } catch (error) {
+        console.error("Error parsing Local Storage data:", error);
+      }
+    }
+  }, []);
+
+  useEffect(() => { // Guardar la lista en Local Storage
+    console.log("Saving to Local Storage:", todoList);
+    localStorage.setItem("todoList", JSON.stringify(todoList));
+  }, [todoList]);
+
+
   const handleChange = (e: any) => {
     setTodoDescription(e.target.value);
   };
 
   const handleClick = () => {
-    const tempTodoList = [...todoList];
-    const newTodo = { description: todoDescription, completed: false };
-
-    tempTodoList.unshift(newTodo);
-
+    if (todoDescription.trim() === "") return; // No agregar si está vacío
+  
+    const newTodo: Todo = { description: todoDescription.trim(), completed: false };
+  
+    const tempTodoList = [newTodo, ...todoList];
+  
     setTodoList(tempTodoList);
+    setTodoDescription(""); // Limpiar input después de agregar
   };
 
   const handleDelete = (index: number) => {
@@ -46,7 +72,9 @@ function App() {
   const handleCheckboxChange = (index: number) => {
     const updatedList = todoList.map((todo, i) => {
       if (i === index) {
-        return { ...todo, completed: !todo.completed };
+        return { ...todo, completed: !todo.completed,  
+          completedDate: !todo.completed ? new Date().toLocaleString() : undefined,
+        };
       }
       return todo;
     });
@@ -81,6 +109,11 @@ function App() {
                 onChange={() => handleCheckboxChange(index)}
               />
               {todo.description}
+              {todo.completed && todo.completedDate && (
+                <span style={{ marginLeft: 10, color: "gray" }}>
+                  Completed on: {todo.completedDate}
+                </span>
+              )}
               <button
                 onClick={() => handleDelete(index)}
                 style={{ marginLeft: 10 }}
@@ -105,6 +138,6 @@ export default App;
 //1. post / save the Todo Item (in a native state) (create Itema, Read Item, Update Item, Delete Item)//*Done
 //2. Last item will be kept on top //*Done
 //3. Add a checkbox to each item  //*Done
-//4. When the users clicks on the checkbox, the item will sink to the bottom of the list  //*Done
-//5. When the users clicks on the checkbox, it will show the date the task was completed  //TODO
-//6. Make sure when you refresh the page, the list is still there (use local storage) //TODO
+//4. When the users clicks on the checkbox, the item will sink to the bottom of the list //*Done
+//5. When the users clicks on the checkbox, it will show the date the task was completed //*Done 
+//6. Make sure when you refresh the page, the list is still there (use local storage) //*Done
