@@ -10,6 +10,7 @@ interface Todo {
 function App() {
   const [todoDescription, setTodoDescription] = useState("");
   const [todoList, setTodoList] = useState<Todo[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false); 
 
   useEffect(() => {  
     const savedTodos = localStorage.getItem("todoList");
@@ -26,27 +27,27 @@ function App() {
         console.error("Error parsing Local Storage data:", error);
       }
     }
+    setIsLoaded(true);
   }, []);
 
-  useEffect(() => { // Guardar la lista en Local Storage
-    console.log("Saving to Local Storage:", todoList);
-    localStorage.setItem("todoList", JSON.stringify(todoList));
-  }, [todoList]);
-
+  useEffect(() => {
+    if (isLoaded) { 
+      console.log("Saving to Local Storage:", todoList);
+      localStorage.setItem("todoList", JSON.stringify(todoList));
+    }
+  }, [todoList, isLoaded]);
 
   const handleChange = (e: any) => {
     setTodoDescription(e.target.value);
   };
 
   const handleClick = () => {
-    if (todoDescription.trim() === "") return; // No agregar si está vacío
+    if (todoDescription.trim() === "") return;
   
     const newTodo: Todo = { description: todoDescription.trim(), completed: false };
-  
     const tempTodoList = [newTodo, ...todoList];
-  
     setTodoList(tempTodoList);
-    setTodoDescription(""); // Limpiar input después de agregar
+    setTodoDescription("");
   };
 
   const handleDelete = (index: number) => {
@@ -134,6 +135,7 @@ function App() {
   );
 }
 export default App;
+
 
 //1. post / save the Todo Item (in a native state) (create Itema, Read Item, Update Item, Delete Item)//*Done
 //2. Last item will be kept on top //*Done
